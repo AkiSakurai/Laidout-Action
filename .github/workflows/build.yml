@@ -1,0 +1,52 @@
+name: Build
+on:
+  workflow_dispatch:
+    inputs:
+      version_suffix:
+        description: 'The version suffix for this manual build.'
+        required: false
+      repository_laidout:
+        description: 'Repository laidout'
+        options:
+          - 'AkiSakurai/laidout/'
+          - 'laidout/laidout/'
+        default: "AkiSakurai/laidout"
+      ref_laidout:
+        description: "Ref laidout"
+      repository_laxkit:
+        description: 'Repository laxkit'
+        options:
+          - 'laidout/laxkit/'
+          - 'AkiSakurai/laxkit/'
+        default: "laidout/laxkit"
+      ref_laxkit:
+        description: "Ref"
+jobs:
+  macos:
+    runs-on: macos-latest
+    name: macOS Release
+    steps:
+      - name: Install dependencies
+        run: brew install harfbuzz graphicsmagick imlib2 openssl@1.1 sqlite gegl mesa-glu ftgl xinput cups
+        
+      - name: Checkout laidout Repository
+        uses: actions/checkout@v2
+        with:
+          repository:  ${{ github.event.inputs.repository_laidout }}
+          ref: ${{ github.event.inputs.ref_laidout }}
+          
+      - name: Checkout laidout Repository
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.repository_laxkit }}
+          path: 'laxkit'
+          ref: ${{ github.event.inputs.ref_laxkit }}
+
+      - name: macOS Build
+        run: PKG_CONFIG_PATH=/usr/local/opt/openssl@1.1/lib/pkgconfig/ ./configure --extra-cppflags "-std=c++11 `pkg-config --cflags openssl`" --pkg-config-path "/usr/local/opt/openssl@1.1/lib/pkgconfig/" --extra-ldflags "`pkg-config --libs openssl`"
+        
+      - name: Upload macOS asset
+        uses: actions/upload-artifact@master
+        with:
+          name: laidout
+          path: ./src/laidout
