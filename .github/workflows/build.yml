@@ -13,16 +13,25 @@ on:
         default: "AkiSakurai/laidout"
       ref_laidout:
         description: "Ref laidout"
+        default: "master"
       repository_laxkit:
         description: 'Repository laxkit'
         options:
           - 'laidout/laxkit/'
           - 'AkiSakurai/laxkit/'
-        default: "laidout/laxkit"
+        default: "AkiSakurai/laxkit"
       ref_laxkit:
         description: "Ref"
+        default: "master"
+      macos:
+        type: boolean
+        description: build macos
+      linux:
+        type: boolean
+        description: build linux
 jobs:
   macos:
+    if:  ${{ github.event.inputs.macos }}
     runs-on: macos-latest
     name: macOS Release
     steps:
@@ -43,10 +52,70 @@ jobs:
           ref: ${{ github.event.inputs.ref_laxkit }}
 
       - name: macOS Build
-        run: PKG_CONFIG_PATH=/usr/local/opt/openssl@1.1/lib/pkgconfig/ ./configure --extra-cppflags "-std=c++11 `pkg-config --cflags openssl`" --pkg-config-path "/usr/local/opt/openssl@1.1/lib/pkgconfig/" --extra-ldflags "`pkg-config --libs openssl`"
+        env: 
+          PKG_CONFIG_PATH: /usr/local/opt/openssl@1.1/lib/pkgconfig/
+        run:  ./configure --extra-cppflags "-std=c++11 `pkg-config --cflags openssl`" --pkg-config-path "/usr/local/opt/openssl@1.1/lib/pkgconfig/" --extra-ldflags "`pkg-config --libs openssl`" && make -j3
         
       - name: Upload macOS asset
         uses: actions/upload-artifact@master
         with:
           name: laidout
           path: ./src/laidout
+
+  linux:
+    if: ${{ github.event.inputs.linux }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Laidout"
+        uses: actions/checkout@v2
+        with:
+          repository:  ${{ github.event.inputs.repository_laidout }}
+          ref: ${{ github.event.inputs.ref_laidout }}
+          path: laidout
+
+      - name: "Checkout Laxkit"
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.repository_laxkit }}
+          ref: ${{ github.event.inputs.ref_laxkit }}
+          path: laidout/laxkit
+
+
+      - name: Configure
+        run: |
+          sudo apt update
+          sudo apt-get install g++ pkg-config libpng-dev libreadline-dev libx11-dev libxext-dev libxi-dev libxrandr-dev libxft-dev libcups2-dev libimlib2-dev libfontconfig-dev libfreetype6-dev libssl-dev xutils-dev libcairo2-dev libharfbuzz-dev libsqlite3-dev libgraphicsmagick++1-dev mesa-common-dev libglu1-mesa-dev libftgl-dev zlib1g-dev libgegl-dev gettext
+          cd laidout
+          ./configure --laxkit=`pwd`/laxkit/lax --prefix=`pwd`/../installed --relocatable --gegl-version gegl-0.4
+
+      - name: Build
+        run: |
+          cd laidout
+          make
+
+      - name: Make icons
+        run: |
+          cd laidout
+          #echo make icons curdir: `pwd`
+          make -C src/icons all-with-lax
+
+      - name: Set version
+        run: |
+          cd laidout
+          echo "LAIDOUT_VERSION=`cat src/laidout_version.txt`" >> $GITHUB_ENV
+
+      - name: Install
+        run: |
+          cd laidout
+          make install
+
+      - name: Package
+        run: |
+          mv installed laidout-${{ env.LAIDOUT_VERSION }}
+          tar cjv laidout-${{ env.LAIDOUT_VERSION }} > laidout-bin-${{ env.LAIDOUT_VERSION }}.tar.bz2
+
+      - name: Upload-Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: laidout-tar
+          path: laidout-bin-${{ env.LAIDOUT_VERSION }}.tar.bz2
