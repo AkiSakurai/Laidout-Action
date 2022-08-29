@@ -36,7 +36,7 @@ jobs:
     name: macOS Release
     steps:
       - name: Install dependencies
-        run: brew install harfbuzz graphicsmagick imlib2 openssl@1.1 sqlite gegl mesa-glu ftgl xinput cups
+        run: brew install harfbuzz graphicsmagick imlib2 openssl@1.1 sqlite gegl mesa-glu ftgl xinput cups coreutils
         
       - name: Checkout laidout Repository
         uses: actions/checkout@v2
