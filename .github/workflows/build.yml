@@ -31,7 +31,7 @@ on:
         description: build linux
 jobs:
   macos:
-    if:  ${{ github.event.inputs.macos == true }}
+    if:  ${{ github.event.inputs.macos == 'true' }}
     runs-on: macos-latest
     name: macOS Release
     steps:
@@ -69,7 +69,7 @@ jobs:
           path: ./install
 
   linux:
-    if: ${{ github.event.inputs.linux == true }}
+    if: ${{ github.event.inputs.linux == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout Laidout"
