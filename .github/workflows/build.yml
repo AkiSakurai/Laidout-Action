@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew install harfbuzz graphicsmagick imlib2 openssl@1.1 sqlite gegl mesa-glu ftgl xinput cups 
-          brew unlink imlib2
+          brew unlink gegl
           brew install coreutils
         
       - name: Checkout laidout Repository
