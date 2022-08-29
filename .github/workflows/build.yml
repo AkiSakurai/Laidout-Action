@@ -31,12 +31,15 @@ on:
         description: build linux
 jobs:
   macos:
-    if:  ${{ github.event.inputs.macos }}
+    if:  ${{ github.event.inputs.macos == true }}
     runs-on: macos-latest
     name: macOS Release
     steps:
       - name: Install dependencies
-        run: brew install harfbuzz graphicsmagick imlib2 openssl@1.1 sqlite gegl mesa-glu ftgl xinput cups coreutils
+        run: |
+          brew install harfbuzz graphicsmagick imlib2 openssl@1.1 sqlite gegl mesa-glu ftgl xinput cups 
+          brew unlink imlib2
+          brew install coreutils
         
       - name: Checkout laidout Repository
         uses: actions/checkout@v2
@@ -54,7 +57,10 @@ jobs:
       - name: macOS Build
         env: 
           PKG_CONFIG_PATH: /usr/local/opt/openssl@1.1/lib/pkgconfig/
-        run:  ./configure --prefix=./install --extra-cppflags "-std=c++11 `pkg-config --cflags openssl`" --pkg-config-path "/usr/local/opt/openssl@1.1/lib/pkgconfig/" --extra-ldflags "`pkg-config --libs openssl`" && make -j3 && make install
+        run:  |
+          ./configure --prefix=./install --extra-cppflags "-std=c++11 `pkg-config --cflags openssl`" --pkg-config-path "/usr/local/opt/openssl@1.1/lib/pkgconfig/" --extra-ldflags "`pkg-config --libs openssl`" 
+          make -j3 
+          make install
         
       - name: Upload macOS asset
         uses: actions/upload-artifact@master
@@ -63,7 +69,7 @@ jobs:
           path: ./install
 
   linux:
-    if: ${{ github.event.inputs.linux }}
+    if: ${{ github.event.inputs.linux == true }}
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout Laidout"
