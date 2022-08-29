@@ -60,7 +60,7 @@ jobs:
         env: 
           PKG_CONFIG_PATH: /usr/local/opt/openssl@1.1/lib/pkgconfig/
         run:  |
-          ./configure --prefix=./install --extra-cppflags "-std=c++11 `pkg-config --cflags openssl`" --pkg-config-path "/usr/local/opt/openssl@1.1/lib/pkgconfig/" --extra-ldflags "`pkg-config --libs openssl`" 
+          ./configure --prefix=./install --relocatable  --extra-cppflags "-std=c++11 `pkg-config --cflags openssl`" --pkg-config-path "/usr/local/opt/openssl@1.1/lib/pkgconfig/" --extra-ldflags "`pkg-config --libs imlib2 openssl freetype2 sqlite3 imlib2 cairo x11 fontconfig GraphicsMagick++ xft xrender`"
           make -j3 
           make install
         
