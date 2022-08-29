@@ -54,13 +54,13 @@ jobs:
       - name: macOS Build
         env: 
           PKG_CONFIG_PATH: /usr/local/opt/openssl@1.1/lib/pkgconfig/
-        run:  ./configure --extra-cppflags "-std=c++11 `pkg-config --cflags openssl`" --pkg-config-path "/usr/local/opt/openssl@1.1/lib/pkgconfig/" --extra-ldflags "`pkg-config --libs openssl`" && make -j3
+        run:  ./configure --prefix=./install --extra-cppflags "-std=c++11 `pkg-config --cflags openssl`" --pkg-config-path "/usr/local/opt/openssl@1.1/lib/pkgconfig/" --extra-ldflags "`pkg-config --libs openssl`" && make -j3 && make install
         
       - name: Upload macOS asset
         uses: actions/upload-artifact@master
         with:
           name: laidout
-          path: ./src/laidout
+          path: ./install
 
   linux:
     if: ${{ github.event.inputs.linux }}
