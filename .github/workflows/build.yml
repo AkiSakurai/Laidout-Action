@@ -37,8 +37,7 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          brew install coreutils
-          brew unlink coreutils
+          brew install uutils-coreutils
           brew install harfbuzz graphicsmagick imlib2 openssl@1.1 sqlite gegl mesa-glu ftgl xinput cups 
           
           
